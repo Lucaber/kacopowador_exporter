@@ -7,9 +7,9 @@ import (
 	"github.com/kelseyhightower/envconfig"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/prometheus/client_model/go"
 	"github.com/robfig/cron"
 	"io/ioutil"
+	"kacopowador_exporter/collector"
 	"log"
 	"net/http"
 	"strconv"
@@ -50,49 +50,40 @@ type Response struct {
 }
 
 var (
-	conf         Config
-	metrickwh = prometheus.NewMetricWithTimestamp(
-		time.Unix(0,0),
-		prometheus.MustNewConstMetric(
-			prometheus.NewDesc(
-				"kwh",
-				"kwh",
-				nil, nil,
-			),
-			prometheus.GaugeValue,
-			0,
-		))
+	conf Config
 )
 
 func main() {
 	err := envconfig.Process("KACOPOWADOR", &conf)
-
 	if err != nil {
 		log.Fatal(err.Error())
 	}
 
 	ch := make(chan Response)
 
+	kacoCollector, err := collector.NewKacoCollector()
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	err = prometheus.Register(kacoCollector)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
 	c := cron.New()
 	c.AddFunc("*/15 * * * * *", func() { request(ch) })
 	c.Start()
 
-
-	var met io_prometheus_client.Metric
-	metrickwh.Write(&met)
-	met.Gauge.
-
-
 	go func() {
 		for {
 			res := <-ch
+			log.Println(res)
 
-			fmt.Println(res)
 		}
 	}()
 
 	http.Handle("/metrics", promhttp.Handler())
-	http.ListenAndServe(fmt.Sprintf(":%d", conf.MetricPort), nil)
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", conf.MetricPort), nil))
 }
 
 func request(ch chan Response) {
