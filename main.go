@@ -5,7 +5,7 @@ import (
 	"github.com/kelseyhightower/envconfig"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"kacopowador_exporter/collector"
+	"gitlab.mirconited.de/lusu/kacopowador_exporter/collector"
 	"log"
 	"net/http"
 )
