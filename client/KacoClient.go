@@ -52,6 +52,11 @@ func RequestState(host string, date time.Time, ch chan<- KacoState) {
 
 	//File actually contains two csv "files"
 
+	if len(rows) < 4 {
+		ch <- KacoState{Info{0}, Current{date,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}}
+		return
+	}
+
 	info, err := parseInfo(rows[:2])
 	if err != nil {
 		log.Fatal(err)
