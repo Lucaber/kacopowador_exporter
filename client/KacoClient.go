@@ -62,11 +62,15 @@ func RequestState(host string, date time.Time, ch chan<- KacoState) {
 	info, err := parseInfo(rows[:2])
 	if err != nil {
 		log.Fatal(err)
+		ch <- KacoState{Info{}, Current{}}
+		return
 	}
 
 	current, err := parseCurrent(rows[2:], date)
 	if err != nil {
 		log.Fatal(err)
+		ch <- KacoState{Info{}, Current{}}
+		return
 	}
 
 	ch <- KacoState{*info, *current}
