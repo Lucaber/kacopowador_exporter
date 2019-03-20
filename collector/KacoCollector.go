@@ -17,10 +17,10 @@ type KacoCollector struct {
 	pdc2 *prometheus.Desc
 	uac1 *prometheus.Desc
 	iac1 *prometheus.Desc
-	pac1 *prometheus.Desc
 	uac2 *prometheus.Desc
 	iac2 *prometheus.Desc
-	pac2 *prometheus.Desc
+	uac3 *prometheus.Desc
+	iac3 *prometheus.Desc
 	pdc  *prometheus.Desc
 	pac  *prometheus.Desc
 	tsys *prometheus.Desc
@@ -65,10 +65,6 @@ func NewKacoCollector(host string) (prometheus.Collector, error) {
 			"Current iac1",
 			nil, nil,
 		),
-		pac1: prometheus.NewDesc("pac1",
-			"Current pac1",
-			nil, nil,
-		),
 		uac2: prometheus.NewDesc("uac2",
 			"Current uac2",
 			nil, nil,
@@ -77,8 +73,12 @@ func NewKacoCollector(host string) (prometheus.Collector, error) {
 			"Current iac2",
 			nil, nil,
 		),
-		pac2: prometheus.NewDesc("pac2",
-			"Current pac2",
+		uac3: prometheus.NewDesc("uac3",
+			"Current uac3",
+			nil, nil,
+		),
+		iac3: prometheus.NewDesc("iac3",
+			"Current iac3",
 			nil, nil,
 		),
 		pdc: prometheus.NewDesc("pdc",
@@ -106,10 +106,10 @@ func (collector *KacoCollector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- collector.pdc2
 	ch <- collector.uac1
 	ch <- collector.iac1
-	ch <- collector.pac1
 	ch <- collector.uac2
 	ch <- collector.iac2
-	ch <- collector.pac2
+	ch <- collector.uac3
+	ch <- collector.iac3
 	ch <- collector.pdc
 	ch <- collector.pac
 	ch <- collector.tsys
@@ -131,10 +131,10 @@ func (collector *KacoCollector) Collect(ch chan<- prometheus.Metric) {
 	ch <- prometheus.MustNewConstMetric(collector.pdc2, prometheus.GaugeValue, res.Pdc2)
 	ch <- prometheus.MustNewConstMetric(collector.uac1, prometheus.GaugeValue, res.Uac1)
 	ch <- prometheus.MustNewConstMetric(collector.iac1, prometheus.GaugeValue, res.Iac1)
-	ch <- prometheus.MustNewConstMetric(collector.pac1, prometheus.GaugeValue, res.Pac1)
 	ch <- prometheus.MustNewConstMetric(collector.uac2, prometheus.GaugeValue, res.Uac2)
 	ch <- prometheus.MustNewConstMetric(collector.iac2, prometheus.GaugeValue, res.Iac2)
-	ch <- prometheus.MustNewConstMetric(collector.pac2, prometheus.GaugeValue, res.Pac2)
+	ch <- prometheus.MustNewConstMetric(collector.uac3, prometheus.GaugeValue, res.Uac3)
+	ch <- prometheus.MustNewConstMetric(collector.iac3, prometheus.GaugeValue, res.Iac3)
 	ch <- prometheus.MustNewConstMetric(collector.pdc, prometheus.GaugeValue, res.Pdc)
 	ch <- prometheus.MustNewConstMetric(collector.pac, prometheus.GaugeValue, res.Pac)
 	ch <- prometheus.MustNewConstMetric(collector.tsys, prometheus.GaugeValue, res.Tsys)

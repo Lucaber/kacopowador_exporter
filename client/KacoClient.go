@@ -25,10 +25,10 @@ type Current struct {
 	Pdc2 float64
 	Uac1 float64
 	Iac1 float64
-	Pac1 float64
 	Uac2 float64
 	Iac2 float64
-	Pac2 float64
+	Uac3 float64
+	Iac3 float64
 	Pdc  float64
 	Pac  float64
 	Tsys float64
@@ -113,15 +113,15 @@ func parseCurrent(rows [][]byte, date time.Time) (*Current, error) {
 	Pdc2, err := strconv.ParseFloat(row[6], 64)
 	Uac1, err := strconv.ParseFloat(row[7], 64)
 	Iac1, err := strconv.ParseFloat(row[8], 64)
-	Pac1, err := strconv.ParseFloat(row[9], 64)
-	Uac2, err := strconv.ParseFloat(row[10], 64)
-	Iac2, err := strconv.ParseFloat(row[11], 64)
-	Pac2, err := strconv.ParseFloat(row[12], 64)
+	Uac2, err := strconv.ParseFloat(row[9], 64)
+	Iac2, err := strconv.ParseFloat(row[10], 64)
+	Uac3, err := strconv.ParseFloat(row[11], 64)
+	Iac3, err := strconv.ParseFloat(row[12], 64)
 	Pdc, err := strconv.ParseFloat(row[13], 64)
 	Pac, err := strconv.ParseFloat(row[14], 64)
 	Tsys, err := strconv.ParseFloat(row[15], 64)
 	if err != nil {
 		return nil, err
 	}
-	return &Current{Time, Udc1, Idc1, Pdc1, Udc2, Idc2, Pdc2, Uac1, Iac1, Pac1, Uac2, Iac2, Pac2, Pdc, Pac, Tsys}, nil
+	return &Current{Time, Udc1, Idc1, Pdc1, Udc2, Idc2, Pdc2, Uac1, Iac1, Uac2, Iac2, Uac3, Iac3, Pdc, Pac, Tsys}, nil
 }
