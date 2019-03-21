@@ -54,7 +54,7 @@ func RequestState(host string, date time.Time, ch chan<- KacoState) {
 
 	//File actually contains two csv "files"
 
-	if len(rows) < 4 {
+	if len(rows) < 5 {
 		ch <- KacoState{Info{}, Current{}}
 		return
 	}
