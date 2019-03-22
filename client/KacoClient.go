@@ -84,6 +84,10 @@ func parseInfo(rows [][]byte) (*Info, error) {
 	if err != nil {
 		return nil, err
 	}
+	if len(infoRows) < 2 || len(infoRows[1]) < 5 {
+		return nil, &ParseError{"info row not found"}
+	}
+
 	KWh, err := strconv.ParseFloat(infoRows[1][4], 64)
 	if err != nil {
 		return nil, err
@@ -98,6 +102,10 @@ func parseCurrent(rows [][]byte, date time.Time) (*Current, error) {
 	infoRows, err := infoReader.ReadAll()
 	if err != nil {
 		return nil, err
+	}
+
+	if len(infoRows) < 2 || len(infoRows[len(infoRows)-1]) < 15 {
+		return nil, &ParseError{"current info row not found"}
 	}
 
 	row := infoRows[len(infoRows)-1]
@@ -124,4 +132,11 @@ func parseCurrent(rows [][]byte, date time.Time) (*Current, error) {
 		return nil, err
 	}
 	return &Current{Time, Udc1, Idc1, Pdc1, Udc2, Idc2, Pdc2, Uac1, Iac1, Uac2, Iac2, Uac3, Iac3, Pdc, Pac, Tsys}, nil
+}
+
+type ParseError struct{
+	message string
+}
+func (e *ParseError) Error() string {
+	return e.message
 }
