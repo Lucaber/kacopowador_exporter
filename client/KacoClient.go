@@ -44,7 +44,7 @@ func RequestState(host string, date time.Time, ch chan<- KacoState) {
 	resp, err := http.Get(fmt.Sprintf("http://%s/%d%02d%02d.CSV", host, date.Year(), date.Month(), date.Day()))
 	defer resp.Body.Close()
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 		ch <- KacoState{Info{}, Current{}}
 		return
 	}
@@ -61,14 +61,14 @@ func RequestState(host string, date time.Time, ch chan<- KacoState) {
 
 	info, err := parseInfo(rows[:2])
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 		ch <- KacoState{Info{}, Current{}}
 		return
 	}
 
 	current, err := parseCurrent(rows[2:], date)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 		ch <- KacoState{Info{}, Current{}}
 		return
 	}
