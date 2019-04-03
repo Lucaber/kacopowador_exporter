@@ -42,12 +42,12 @@ type KacoState struct {
 
 func RequestState(host string, date time.Time, ch chan<- KacoState) {
 	resp, err := http.Get(fmt.Sprintf("http://%s/%d%02d%02d.CSV", host, date.Year(), date.Month(), date.Day()))
-	defer resp.Body.Close()
 	if err != nil {
 		log.Println(err)
 		ch <- KacoState{Info{}, Current{}}
 		return
 	}
+	defer resp.Body.Close()
 
 	b, err := ioutil.ReadAll(resp.Body)
 	rows := bytes.Split(b, []byte("\r"))
