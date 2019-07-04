@@ -32,5 +32,5 @@ func (collector *KacoRealtimeCollector) Collect(ch chan<- prometheus.Metric) {
 	go client.RequestRealtimeState(collector.host, time.Now(), resc)
 	res := <-resc
 
-	ch <- prometheus.MustNewConstMetric(collector.p_realtime, prometheus.CounterValue, res.PRealtime)
+	ch <- prometheus.MustNewConstMetric(collector.p_realtime, prometheus.GaugeValue, res.PRealtime)
 }
