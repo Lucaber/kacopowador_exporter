@@ -34,6 +34,15 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
+	kacoRealtimeCollector, err := collector.NewKacoRealtimeCollector(conf.Host)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	err = prometheus.Register(kacoRealtimeCollector)
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+
 	http.Handle("/metrics", promhttp.Handler())
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", conf.MetricPort), nil))
 }
