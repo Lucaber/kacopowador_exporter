@@ -2,7 +2,7 @@ package collector
 
 import (
 	"github.com/prometheus/client_golang/prometheus"
-	"gitlab.mirconited.de/lusu/kacopowador_exporter/client"
+	"github.com/lucaber/kacopowador_exporter/client"
 	"time"
 )
 

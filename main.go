@@ -5,8 +5,8 @@ import (
 	"github.com/kelseyhightower/envconfig"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"gitlab.mirconited.de/lusu/kacopowador_exporter/client"
-	"gitlab.mirconited.de/lusu/kacopowador_exporter/collector"
+	"github.com/lucaber/kacopowador_exporter/client"
+	"github.com/lucaber/kacopowador_exporter/collector"
 	"log"
 	"net/http"
 	"time"
@@ -32,9 +32,12 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	err = setupMqtt()
-	if err != nil {
-		log.Fatal(err)
+	
+	if conf.MqttHost != "" {
+		err = setupMqtt()
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	err = setupPrometheus()

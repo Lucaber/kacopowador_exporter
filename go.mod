@@ -1,4 +1,4 @@
-module gitlab.mirconited.de/lusu/kacopowador_exporter
+module github.com/lucaber/kacopowador_exporter
 
 go 1.12
 
