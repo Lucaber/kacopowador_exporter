@@ -5,14 +5,21 @@ import (
 	"github.com/kelseyhightower/envconfig"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"gitlab.mirconited.de/lusu/kacopowador_exporter/client"
 	"gitlab.mirconited.de/lusu/kacopowador_exporter/collector"
 	"log"
 	"net/http"
+	"time"
 )
 
 type Config struct {
 	Host       string
 	MetricPort int
+	MqttHost string
+	MqttUser string
+	MqttPassword string
+	MqttName string
+	MqttInterval int64
 }
 
 var (
@@ -25,24 +32,66 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	kacoCollector, err := collector.NewKacoCollector(conf.Host)
+	err = setupMqtt()
 	if err != nil {
-		log.Fatal(err.Error())
-	}
-	err = prometheus.Register(kacoCollector)
-	if err != nil {
-		log.Fatal(err.Error())
+		log.Fatal(err)
 	}
 
-	kacoRealtimeCollector, err := collector.NewKacoRealtimeCollector(conf.Host)
+	err = setupPrometheus()
 	if err != nil {
-		log.Fatal(err.Error())
-	}
-	err = prometheus.Register(kacoRealtimeCollector)
-	if err != nil {
-		log.Fatal(err.Error())
+		log.Fatal(err)
 	}
 
 	http.Handle("/metrics", promhttp.Handler())
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%d", conf.MetricPort), nil))
+}
+
+func setupMqtt() error {
+	mqttClient, err := client.MqttConnect(conf.MqttName, conf.MqttHost, conf.MqttUser, conf.MqttPassword)
+	if err != nil {
+		log.Fatal(err)
+	}
+	power, err := mqttClient.RegisterSensor("Power", "W")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	ticker := time.NewTicker(time.Duration(conf.MqttInterval) * time.Second)
+	go func() {
+		for {
+			select {
+			case <- ticker.C:
+				resc := make(chan client.KacoRealtimeState)
+				go client.RequestRealtimeState(conf.Host, time.Now(), resc)
+				res := <-resc
+				err = power.Emit(res.PRealtime)
+				if err != nil {
+					log.Print(err)
+				}
+
+			}
+		}
+	}()
+	return nil
+}
+
+func setupPrometheus() error {
+	kacoCollector, err := collector.NewKacoCollector(conf.Host)
+	if err != nil {
+		return err
+	}
+	err = prometheus.Register(kacoCollector)
+	if err != nil {
+		return err
+	}
+
+	kacoRealtimeCollector, err := collector.NewKacoRealtimeCollector(conf.Host)
+	if err != nil {
+		return err
+	}
+	err = prometheus.Register(kacoRealtimeCollector)
+	if err != nil {
+		return err
+	}
+	return nil	
 }

@@ -48,13 +48,13 @@ func parseRealtime(row []byte) (*Realtime, error) {
 
 	ts, err := strconv.ParseInt(string(values[0]), 10, 64)
 	if err != nil {
-		panic(err)
+		return nil, &ParseError{"invalid realtime timestamp value"}
 	}
 	Time := time.Unix(ts, 0)
 	PRealtime, err := strconv.ParseFloat(string(values[len(values) - 3]), 64)
-	PRealtime = PRealtime / (65535.0 / 100000.0) // from main.js
 	if err != nil {
 		return nil, err
 	}
+	PRealtime = PRealtime / (65535.0 / 100000.0) // from main.js
 	return &Realtime{Time, PRealtime}, nil
 }
