@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"log"
 	"strconv"
 	"time"
 )
@@ -11,6 +12,7 @@ import (
 type MqttClient struct {
 	mqtt.Client
 	Name string
+	sensors []*MqttSensor
 }
 
 type MqttSensor struct {
@@ -36,19 +38,31 @@ type MqttDevice struct {
 }
 
 func MqttConnect(name, host, username, password string) (*MqttClient, error) {
+	client := &MqttClient{nil ,name, []*MqttSensor{}}
+
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker("tcp://" + host)
 	opts.SetUsername(username)
 	opts.SetPassword(password)
 	opts.SetClientID(name)
-	client := mqtt.NewClient(opts)
-	token := client.Connect()
+	opts.SetOnConnectHandler(func(c mqtt.Client) {
+		log.Printf("mqtt connected")
+		for _, s := range client.sensors {
+			err := s.announceSensor()
+			if err != nil {
+				log.Printf("Failed to register sensor %s, err %s", s.Config.UniqueID, err)
+			}
+		}
+	})
+	c := mqtt.NewClient(opts)
+	client.Client = c
+	token := c.Connect()
 	for !token.WaitTimeout(3 * time.Second) {
 	}
 	if err := token.Error(); err != nil {
 		return nil, err
 	}
-	return &MqttClient{client ,name}, nil
+	return client, nil
 }
 
 func (c * MqttClient) RegisterSensor(name string, unit string) (*MqttSensor, error) {
@@ -67,21 +81,26 @@ func (c * MqttClient) RegisterSensor(name string, unit string) (*MqttSensor, err
 		UniqueID: fullName,
 		Name: c.Name + " " + name,
 	}
-	pl, err := json.Marshal(config)
-	if err != nil {
-		return nil, err
-	}
-	topic := fmt.Sprintf("homeassistant/sensor/%s/config", fullName)
-	token := c.Client.Publish(topic , 0, false, pl)
-	for !token.WaitTimeout(3 * time.Second) {
-	}
-	if err := token.Error(); err != nil {
-		return nil, err
-	}
-	return &MqttSensor{config,
+
+	sensor := &MqttSensor{config,
 		c,
 		stateTopic,
-	}, nil
+	}
+	c.sensors = append(c.sensors, sensor)
+	err := sensor.announceSensor()
+	return sensor, err
+}
+
+func (s *MqttSensor) announceSensor() error {
+	pl, err := json.Marshal(s.Config)
+	if err != nil {
+		return err
+	}
+	topic := fmt.Sprintf("homeassistant/sensor/%s/config", s.Config.UniqueID)
+	token := s.Client.Publish(topic , 0, false, pl)
+	for !token.WaitTimeout(3 * time.Second) {
+	}
+	return token.Error()
 }
 
 func (s *MqttSensor) Emit(value float64) error {
