@@ -11,7 +11,7 @@ import (
 )
 
 type Realtime struct {
-	Time time.Time
+	Time      time.Time
 	PRealtime float64
 }
 
@@ -51,7 +51,7 @@ func parseRealtime(row []byte) (*Realtime, error) {
 		return nil, &ParseError{"invalid realtime timestamp value"}
 	}
 	Time := time.Unix(ts, 0)
-	PRealtime, err := strconv.ParseFloat(string(values[len(values) - 3]), 64)
+	PRealtime, err := strconv.ParseFloat(string(values[len(values)-3]), 64)
 	if err != nil {
 		return nil, err
 	}

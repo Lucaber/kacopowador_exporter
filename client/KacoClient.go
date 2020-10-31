@@ -39,7 +39,6 @@ type KacoState struct {
 	Current
 }
 
-
 func RequestState(host string, date time.Time, ch chan<- KacoState) {
 	resp, err := http.Get(fmt.Sprintf("http://%s/%d%02d%02d.CSV", host, date.Year(), date.Month(), date.Day()))
 	if err != nil {
@@ -134,9 +133,10 @@ func parseCurrent(rows [][]byte, date time.Time) (*Current, error) {
 	return &Current{Time, Udc1, Idc1, Pdc1, Udc2, Idc2, Pdc2, Uac1, Iac1, Uac2, Iac2, Uac3, Iac3, Pdc, Pac, Tsys}, nil
 }
 
-type ParseError struct{
+type ParseError struct {
 	message string
 }
+
 func (e *ParseError) Error() string {
 	return e.message
 }
