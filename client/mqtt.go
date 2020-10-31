@@ -47,22 +47,37 @@ func MqttConnect(name, host, username, password string) (*MqttClient, error) {
 	opts.SetClientID(name)
 	opts.SetOnConnectHandler(func(c mqtt.Client) {
 		log.Printf("mqtt connected")
-		for _, s := range client.sensors {
-			err := s.announceSensor()
-			if err != nil {
-				log.Printf("Failed to register sensor %s, err %s", s.Config.UniqueID, err)
-			}
+		err := client.AnnounceSensors()
+		if err != nil {
+			log.Printf("Failed to register sensor: %s", err)
 		}
 	})
 	c := mqtt.NewClient(opts)
 	client.Client = c
-	token := c.Connect()
-	for !token.WaitTimeout(3 * time.Second) {
+	if token := c.Connect(); token.Wait() && token.Error() != nil {
+		return nil, token.Error()
 	}
-	if err := token.Error(); err != nil {
-		return nil, err
+	if token := client.Subscribe("homeassistant/status", 2, func(c mqtt.Client, message mqtt.Message) {
+		if string(message.Payload()) == "online" {
+			err := client.AnnounceSensors()
+			if err != nil {
+				log.Printf("Failed to register sensor: %s", err)
+			}
+		}
+	}); token.Wait() && token.Error() != nil {
+		return nil, token.Error()
 	}
 	return client, nil
+}
+
+func (c * MqttClient) AnnounceSensors() error {
+	for _, s := range c.sensors {
+		err := s.announceSensor()
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (c * MqttClient) RegisterSensor(name string, unit string) (*MqttSensor, error) {
