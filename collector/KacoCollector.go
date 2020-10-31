@@ -1,8 +1,8 @@
 package collector
 
 import (
-	"github.com/prometheus/client_golang/prometheus"
 	"github.com/lucaber/kacopowador_exporter/client"
+	"github.com/prometheus/client_golang/prometheus"
 	"time"
 )
 

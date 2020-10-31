@@ -3,22 +3,22 @@ package main
 import (
 	"fmt"
 	"github.com/kelseyhightower/envconfig"
-	"github.com/prometheus/client_golang/prometheus"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/lucaber/kacopowador_exporter/client"
 	"github.com/lucaber/kacopowador_exporter/collector"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"log"
 	"net/http"
 	"time"
 )
 
 type Config struct {
-	Host       string
-	MetricPort int
-	MqttHost string
-	MqttUser string
+	Host         string
+	MetricPort   int
+	MqttHost     string
+	MqttUser     string
 	MqttPassword string
-	MqttName string
+	MqttName     string
 	MqttInterval int64
 }
 
@@ -32,7 +32,6 @@ func main() {
 		log.Fatal(err.Error())
 	}
 
-	
 	if conf.MqttHost != "" {
 		err = setupMqtt()
 		if err != nil {
@@ -63,7 +62,7 @@ func setupMqtt() error {
 	go func() {
 		for {
 			select {
-			case <- ticker.C:
+			case <-ticker.C:
 				resc := make(chan client.KacoRealtimeState)
 				go client.RequestRealtimeState(conf.Host, time.Now(), resc)
 				res := <-resc
@@ -96,5 +95,5 @@ func setupPrometheus() error {
 	if err != nil {
 		return err
 	}
-	return nil	
+	return nil
 }
